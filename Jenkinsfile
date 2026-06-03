@@ -14,22 +14,7 @@ pipeline {
                     url: 'https://github.com/mohitkumarsuthar/todo-app.git'
             }
         }
-        stage('Check Commit') {
-            steps {
-                script {
-                    def msg = sh(
-                    script: "git log -1 --pretty=%B",
-                    returnStdout: true
-                ).trim()
-
-                    if (msg.contains('[skip ci]')) {
-                        currentBuild.result = 'NOT_BUILT'
-                        error('Skipping build')
-                        }
-                    }
-                }
-            }
-        }
+    
         stage('Docker Build') {
             steps {
                 sh 'docker build -t todo-app:${BUILD_NUMBER} .'
