@@ -1,12 +1,19 @@
 pipeline {
     agent any
-    
+
     environment {
         ECR_URI = "686382907829.dkr.ecr.ap-south-1.amazonaws.com/mohitkumar/todo-app"
         REGION = "ap-south-1"
     }
-    
+
     stages {
+
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -14,34 +21,35 @@ pipeline {
                     url: 'https://github.com/mohitkumarsuthar/todo-app.git'
             }
         }
+
         stage('Check Commit') {
             steps {
                 script {
                     def msg = sh(
-                    script: "git log -1 --pretty=%B",
-                    returnStdout: true
-                ).trim()
+                        script: "git log -1 --pretty=%B",
+                        returnStdout: true
+                    ).trim()
 
                     if (msg.contains('[skip ci]')) {
                         currentBuild.result = 'NOT_BUILT'
                         error('Skipping build')
-                        }
                     }
                 }
             }
         }
+
         stage('Docker Build') {
             steps {
-                sh 'docker build -t todo-app:${BUILD_NUMBER} .'
+                sh 'docker build --no-cache -t todo-app:${BUILD_NUMBER} .'
             }
         }
-        
+
         stage('Trivy Scan') {
             steps {
                 sh 'trivy image --exit-code 0 --severity HIGH,CRITICAL todo-app:${BUILD_NUMBER}'
             }
         }
-        
+
         stage('Push to ECR') {
             steps {
                 sh '''
@@ -68,8 +76,9 @@ pipeline {
                 }
             }
         }
+
     }
-    
+
     post {
         success {
             echo 'Pipeline successful! ArgoCD will deploy automatically!'
