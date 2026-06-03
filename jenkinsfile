@@ -10,7 +10,8 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/your-username/your-repo'
+                    credentialsId: 'github',
+                    url: 'https://github.com/mohitkumarsuthar/todo-app.git'
             }
         }
         
@@ -35,17 +36,21 @@ pipeline {
                 '''
             }
         }
-        
+
         stage('Update Deployment') {
             steps {
-                sh '''
-                sed -i "s|todo-app:latest|todo-app:${BUILD_NUMBER}|g" deployment.yaml
-                git config user.email "jenkins@devops.com"
-                git config user.name "Jenkins"
-                git add deployment.yaml
-                git commit -m "updated image tag to ${BUILD_NUMBER}"
-                git push
-                '''
+                withCredentials([usernamePassword(credentialsId: 'github-creds', 
+                                usernameVariable: 'GIT_USER', 
+                                passwordVariable: 'GIT_TOKEN')]) {
+                    sh '''
+                    sed -i "s|todo-app:.*|todo-app:${BUILD_NUMBER}|g" deployment.yaml
+                    git config user.email "jenkins@devops.com"
+                    git config user.name "Jenkins"
+                    git add deployment.yaml
+                    git commit -m "updated image tag to ${BUILD_NUMBER}"
+                    git push https://${GIT_USER}:${GIT_TOKEN}@github.com/your-username/your-repo main
+                    '''
+                }
             }
         }
     }
