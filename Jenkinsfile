@@ -9,15 +9,27 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // changelog और poll को false करने से यह स्टेज लूप को रोकने में मदद करती है
                 git branch: 'main',
                     credentialsId: 'github',
-                    url: 'https://github.com/mohitkumarsuthar/todo-app.git',
-                    changelog: false, 
-                    poll: false
+                    url: 'https://github.com/mohitkumarsuthar/todo-app.git'
             }
         }
-    
+        stage('Check Commit') {
+            steps {
+                script {
+                    def msg = sh(
+                    script: "git log -1 --pretty=%B",
+                    returnStdout: true
+                ).trim()
+
+                    if (msg.contains('[skip ci]')) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error('Skipping build')
+                        }
+                    }
+                }
+            }
+        }
         stage('Docker Build') {
             steps {
                 sh 'docker build -t todo-app:${BUILD_NUMBER} .'
@@ -46,26 +58,12 @@ pipeline {
                                 usernameVariable: 'GIT_USER', 
                                 passwordVariable: 'GIT_TOKEN')]) {
                     sh '''
-                    # 1. रिपॉजिटरी को क्लीन और लेटेस्ट रखना ताकि पुश फेल न हो
-                    git fetch origin main
-                    git checkout main
-                    
-                    # 2. क्रेडेंशियल्स को मास्क करके ही पुश यूआरएल सेट करना
-                    git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/mohitkumarsuthar/todo-app.git
-                    
-                    # 3. इमेज टैग अपडेट करना
                     sed -i "s|todo-app:.*|todo-app:${BUILD_NUMBER}|g" deployment.yaml
-                    
                     git config user.email "jenkins@devops.com"
                     git config user.name "Jenkins"
-                    
                     git add deployment.yaml
-                    
-                    # 4. कमिट मैसेज में [skip ci] और [ci skip] दोनों ऐड करना ताकि अलग-अलग Git Providers इसे पहचान सकें
-                    git commit -m "updated image tag to ${BUILD_NUMBER} [skip ci] [ci skip]"
-                    
-                    # 5. पुश करना
-                    git push origin main
+                    git commit -m "updated image tag to ${BUILD_NUMBER} [skip ci]"
+                    git push https://${GIT_USER}:${GIT_TOKEN}@github.com/mohitkumarsuthar/todo-app.git main
                     '''
                 }
             }
