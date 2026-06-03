@@ -47,7 +47,7 @@ pipeline {
                     git config user.email "jenkins@devops.com"
                     git config user.name "Jenkins"
                     git add deployment.yaml
-                    git commit -m "updated image tag to ${BUILD_NUMBER}"
+                    git commit -m "updated image tag to ${BUILD_NUMBER} [skip ci]"
                     git push https://${GIT_USER}:${GIT_TOKEN}@github.com/mohitkumarsuthar/todo-app.git main
                     '''
                 }
