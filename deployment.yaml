@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: todo-app
-        image: 686382907829.dkr.ecr.ap-south-1.amazonaws.com/mohitkumar/todo-app:90
+        image: 686382907829.dkr.ecr.ap-south-1.amazonaws.com/mohitkumar/todo-app:91
         ports:
         - containerPort: 80
