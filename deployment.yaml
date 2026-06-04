@@ -1,2 +1,19 @@
-# deployment.yaml mein sirf ye likho
-image: 686382907829.dkr.ecr.ap-south-1.amazonaws.com/mohitkumar/todo-app:latest
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-app
+spec:
+  replicas: 4
+  selector:
+    matchLabels:
+      app: todo-app
+  template:
+    metadata:
+      labels:
+        app: todo-app
+    spec:
+      containers:
+      - name: todo-app
+        image: 686382907829.dkr.ecr.ap-south-1.amazonaws.com/mohitkumar/todo-app:109
+        ports:
+        - containerPort: 80
