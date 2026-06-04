@@ -7,21 +7,6 @@ pipeline {
     }
 
     stages {
-        stage('Check Commit') {
-            steps {
-                script {
-                    def commitMsg = sh(
-                        script: 'git log -1 --pretty=%B',
-                        returnStdout: true
-                    ).trim()
-                    if (commitMsg.contains('[skip ci]')) {
-                        currentBuild.result = 'NOT_BUILT'
-                        error('Skipping CI - deployment commit')
-                    }
-                }
-            }
-        }
-
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -54,8 +39,8 @@ pipeline {
 
         stage('Update Deployment') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'github', 
-                                usernameVariable: 'GIT_USER', 
+                withCredentials([usernamePassword(credentialsId: 'github',
+                                usernameVariable: 'GIT_USER',
                                 passwordVariable: 'GIT_TOKEN')]) {
                     sh '''
                     sed -i "s|todo-app:.*|todo-app:${BUILD_NUMBER}|g" deployment.yaml
