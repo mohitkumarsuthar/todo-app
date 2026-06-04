@@ -6,6 +6,7 @@ pipeline {
         REGION = "ap-south-1"
     }
 
+    stages {
         stage('Check Commit') {
             steps {
                 script {
@@ -13,7 +14,6 @@ pipeline {
                         script: 'git log -1 --pretty=%B',
                         returnStdout: true
                     ).trim()
-                    
                     if (commitMsg.contains('[skip ci]')) {
                         currentBuild.result = 'NOT_BUILT'
                         error('Skipping CI - deployment commit')
@@ -30,25 +30,9 @@ pipeline {
             }
         }
 
-        stage('Check Commit') {
-            steps {
-                script {
-                    def msg = sh(
-                        script: "git log -1 --pretty=%B",
-                        returnStdout: true
-                    ).trim()
-
-                    if (msg.contains('[skip ci]')) {
-                        currentBuild.result = 'NOT_BUILT'
-                        error('Skipping build')
-                    }
-                }
-            }
-        }
-
         stage('Docker Build') {
             steps {
-                sh 'docker build --no-cache -t todo-app:${BUILD_NUMBER} .'
+                sh 'docker build -t todo-app:${BUILD_NUMBER} .'
             }
         }
 
@@ -78,13 +62,12 @@ pipeline {
                     git config user.email "jenkins@devops.com"
                     git config user.name "Jenkins"
                     git add deployment.yaml
-                    git commit -m "updated image tag to ${BUILD_NUMBER} [skip ci]"
+                    git commit -m "CI: updated image tag to ${BUILD_NUMBER} [skip ci]"
                     git push https://${GIT_USER}:${GIT_TOKEN}@github.com/mohitkumarsuthar/todo-app.git main
                     '''
                 }
             }
         }
-
     }
 
     post {
