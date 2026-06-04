@@ -6,11 +6,19 @@ pipeline {
         REGION = "ap-south-1"
     }
 
-    stages {
-
-        stage('Clean Workspace') {
+        stage('Check Commit') {
             steps {
-                cleanWs()
+                script {
+                    def commitMsg = sh(
+                        script: 'git log -1 --pretty=%B',
+                        returnStdout: true
+                    ).trim()
+                    
+                    if (commitMsg.contains('[skip ci]')) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error('Skipping CI - deployment commit')
+                    }
+                }
             }
         }
 
