@@ -1,2 +1,2 @@
 # deployment.yaml mein sirf ye likho
-image: 686382907829.dkr.ecr.ap-south-1.amazonaws.com/mohitkumar/todo-app:latest
+image: 686382907829.dkr.ecr.ap-south-1.amazonaws.com/mohitkumar/todo-app:112
