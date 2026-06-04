@@ -1,1 +1,0 @@
-Remove-Item -Recurse -Force .git\logs\refs\remotes\origin
