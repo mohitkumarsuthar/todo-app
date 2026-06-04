@@ -53,12 +53,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Restart Deployment') {
-            steps {
-                sh 'kubectl rollout restart deployment todo-app'
-            }
-        }
     }
 
     post {
